@@ -1,4 +1,11 @@
-import init, * as Nimiq from '@nimiq/core/web'
+/// <reference types="vite/client" />
+
+declare global {
+  interface Window {
+    Nimiq: typeof import('/nimiq/web/index.js')
+    nimiqInit: () => Promise<unknown>
+  }
+}
 
 type LogTarget = HTMLElement & { textContent: string }
 
@@ -15,18 +22,25 @@ function log(message: string) {
 if (!button)
   throw new Error('Missing #connect button in DOM')
 
+async function ensureNimiqLoaded() {
+  if (!window.Nimiq || !window.nimiqInit)
+    throw new Error('Nimiq loader failed to initialize')
+  await window.nimiqInit()
+  return window.Nimiq
+}
+
 button.addEventListener('click', async () => {
   button.disabled = true
   log('Initializing Nimiq web client…')
 
   try {
-    await init()
+    const Nimiq = await ensureNimiqLoaded()
 
     const config = new Nimiq.ClientConfiguration()
     config.syncMode('pico')
     // config.network('DevAlbatross') // Use default testnet
 
-    log('Creating client (this triggers the panic)…')
+    log('Creating client…')
     const client = await Nimiq.Client.create(config.build())
 
     client.addConsensusChangedListener((state: { toString(): string }) => {
