@@ -26,7 +26,7 @@ button.addEventListener('click', async () => {
     config.syncMode('pico')
     // config.network('DevAlbatross') // Use default testnet
 
-    log('Creating client (this triggers the panic)…')
+    log('Creating client…')
     const client = await Nimiq.Client.create(config.build())
 
     client.addConsensusChangedListener((state: { toString(): string }) => {
