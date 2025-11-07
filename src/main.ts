@@ -23,7 +23,7 @@ button.addEventListener('click', async () => {
 
     const config = new Nimiq.ClientConfiguration()
     config.syncMode('pico')
-    config.network('DevAlbatross')
+    // config.network('DevAlbatross') // Use default testnet
 
     log('Creating client (this triggers the panic)…')
     await Nimiq.Client.create(config.build())
