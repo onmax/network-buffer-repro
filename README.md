@@ -1,31 +1,48 @@
 # Nimiq web client network buffer panic (repro)
 
-This minimal Vite project reproduces the panic we see when the web client from `@nimiq/core@2.2.0`
-starts without explicitly setting `network_buffer_size` on the configuration object.
+Minimal Vite project demonstrating the `mpsc bounded channel requires buffer > 0` panic in `@nimiq/core@2.2.0` and verifying the fix.
 
-The worker tries to create a bounded channel with a zero-sized buffer which triggers the panic:
+## The Bug
+
+When the web client from `@nimiq/core@2.2.0` starts without explicitly setting `network_buffer_size`, the worker panics:
 
 ```
 2025-11-06T19:16:25.994000000Z ERROR panic | thread '<unnamed>' panicked at 'mpsc bounded channel requires buffer > 0': network-libp2p/src/network.rs:328
 ```
 
-## Steps
+Root cause: `ClientConfiguration.build()` doesn't set `network_buffer_size`, defaulting to `0` in `network-libp2p`.
 
-1. Install dependencies
+## Branches
 
-   ```bash
-   pnpm install
-   ```
+- **`main`**: Uses `@nimiq/core@2.2.0` from npm → Shows the panic
+- **`fix/wasm-patch`**: Uses patched WASM from core-rs → Panic fixed, client connects
 
-2. Start the dev server
+## Testing the Bug (main branch)
 
-   ```bash
-   pnpm dev
-   ```
+```bash
+git checkout main
+pnpm install
+pnpm dev
+```
 
-3. Open the printed localhost URL in the browser and click **Connect to Nimiq**.
+Open http://localhost:5173, click "Connect to Nimiq", check console → **panic occurs** ❌
 
-4. Observe the panic in the browser console. The app will report the error in the log box as well.
+## Testing the Fix (fix/wasm-patch branch)
 
-This happens because the plain configuration produced by `ClientConfiguration.build()` does not set
-`network_buffer_size`, so we end up with `0` in `network-libp2p` when the client is instantiated.
+```bash
+git checkout fix/wasm-patch
+pnpm install
+pnpm dev
+```
+
+Open http://localhost:5173, click "Connect to Nimiq", check console → **no panic, client connects** ✓
+
+## The Fix
+
+Applied in `core-rs-albatross/web-client/src/client/lib.rs`:
+
+```rust
+config.network.network_buffer_size = NetworkSettings::default_network_buffer_size();
+```
+
+Ensures bounded channel buffer is 1024 (non-zero) instead of 0.
