@@ -1,0 +1,2 @@
+patchedDependencies:
+  '@nimiq/core@2.2.0': patches/@nimiq__core@2.2.0.patch
