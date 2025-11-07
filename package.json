@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "bash scripts/patch-wasm.sh",
     "dev": "vite",
     "build": "vite build"
   },

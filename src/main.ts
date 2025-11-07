@@ -26,7 +26,7 @@ button.addEventListener('click', async () => {
     config.syncMode('pico')
     // config.network('DevAlbatross') // Use default testnet
 
-    log('Creating client (this triggers the panic)…')
+    log('Creating client…')
     const client = await Nimiq.Client.create(config.build())
 
     client.addConsensusChangedListener((state: { toString(): string }) => {
@@ -38,7 +38,7 @@ button.addEventListener('click', async () => {
     if (consensusTarget)
       consensusTarget.textContent = `Consensus: ${consensus.toString()}`
 
-    log('Unexpected success: client created without panic')
+    log('Success: client created without panic')
   }
   catch (err) {
     const message = err instanceof Error ? err.message : JSON.stringify(err)
