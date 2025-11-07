@@ -12,10 +12,13 @@ When the web client from `@nimiq/core@2.2.0` starts without explicitly setting `
 
 Root cause: `ClientConfiguration.build()` doesn't set `network_buffer_size`, defaulting to `0` in `network-libp2p`.
 
+**This is a regression in v2.2.0** — v2.1.1 works without this panic.
+
 ## Branches
 
-- **`main`**: Uses `@nimiq/core@2.2.0` from npm → Shows the panic
-- **`fix/wasm-patch`**: Uses patched WASM from core-rs → Panic fixed, client connects
+- **`main`**: Uses `@nimiq/core@2.2.0` from npm → Shows the panic ❌
+- **`fix/wasm-patch`**: Uses patched WASM from core-rs → Panic fixed, client connects ✓
+- **`test/version-2.1.1`**: Uses `@nimiq/core@2.1.1` from npm → Works without panic ✓
 
 ## Testing the Bug (main branch)
 
@@ -36,6 +39,16 @@ pnpm dev
 ```
 
 Open http://localhost:5173, click "Connect to Nimiq", check console → **no panic, client connects** ✓
+
+## Testing Previous Version (test/version-2.1.1 branch)
+
+```bash
+git checkout test/version-2.1.1
+pnpm install
+pnpm dev
+```
+
+Open http://localhost:5173, click "Connect to Nimiq", check console → **no panic, confirms regression in 2.2.0** ✓
 
 ## The Fix
 
